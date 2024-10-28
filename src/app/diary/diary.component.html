@@ -1,0 +1,14 @@
+<div [ngClass]="theme" class="diary-container">
+  <h1>Мій Щоденник</h1>
+  <textarea [(ngModel)]="newEntry" placeholder="Напишіть свої думки..."></textarea>
+  <button (click)="addEntry()">Додати запис</button>
+  <button (click)="deleteAllEntries()">Видалити всі записи</button>
+  <button (click)="toggleTheme()">Змінити тему</button>
+
+  <div class="entries">
+    <div *ngFor="let entry of entries" class="entry">
+      <p>{{ entry.content }}</p>
+      <small>{{ entry.date }}</small>
+    </div>
+  </div>
+</div>
