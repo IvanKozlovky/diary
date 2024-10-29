@@ -17,44 +17,64 @@ interface DiaryEntry {
 export class DiaryComponent {
   entries: DiaryEntry[] = [];
   newEntry: string = '';
-  theme: 'light' | 'dark' = 'light'; // Тема, за замовчуванням світла
+  theme: 'light' | 'dark' = 'light';
+
+  filterMonth: string = '';
+  filterYear: string = '';
+  filteredEntries: DiaryEntry[] = [];
+  availableYears: string[] = []; // Доступні роки для фільтру
 
   constructor(private renderer: Renderer2) {
-    this.loadEntries(); // Завантажити записи при ініціалізації
-    this.updateBodyClass(); // Додати клас для body на основі теми
+    this.loadEntries();
+    this.updateBodyClass();
   }
 
   addEntry() {
     if (this.newEntry.trim()) {
       const newDiaryEntry: DiaryEntry = {
         content: this.newEntry.trim(),
-        date: new Date().toLocaleString() // Формат дати
+        date: new Date().toLocaleString()
       };
       this.entries.push(newDiaryEntry);
       this.newEntry = '';
-      this.saveEntries(); // Зберегти записи
+      this.saveEntries();
+      this.updateAvailableYears(); // Оновлюємо список років
+      this.applyFilter(); // Оновлюємо фільтр після додавання
+    }
+  }
+
+  deleteEntry(index: number) {
+    if (index >= 0 && index < this.entries.length) {
+      this.entries.splice(index, 1);
+      this.saveEntries();
+      this.updateAvailableYears(); // Оновлюємо список років
+      this.applyFilter(); // Оновлюємо фільтр після видалення
     }
   }
 
   deleteAllEntries() {
     this.entries = [];
-    this.saveEntries(); // Зберегти записи
+    this.saveEntries();
+    this.updateAvailableYears(); // Очищаємо список років після видалення всіх записів
+    this.applyFilter(); // Оновлюємо фільтр після видалення всіх записів
   }
 
   saveEntries() {
-    localStorage.setItem('diaryEntries', JSON.stringify(this.entries)); // Зберігаємо у Local Storage
+    localStorage.setItem('diaryEntries', JSON.stringify(this.entries));
   }
 
   loadEntries() {
     const savedEntries = localStorage.getItem('diaryEntries');
     if (savedEntries) {
-      this.entries = JSON.parse(savedEntries); // Завантажуємо з Local Storage
+      this.entries = JSON.parse(savedEntries);
     }
+    this.updateAvailableYears(); // Оновлюємо список років після завантаження
+    this.applyFilter(); // Застосовуємо фільтр після завантаження
   }
 
   toggleTheme() {
-    this.theme = this.theme === 'light' ? 'dark' : 'light'; // Перемикаємо тему
-    this.updateBodyClass(); // Оновлюємо клас body
+    this.theme = this.theme === 'light' ? 'dark' : 'light';
+    this.updateBodyClass();
   }
 
   updateBodyClass() {
@@ -65,5 +85,23 @@ export class DiaryComponent {
       this.renderer.removeClass(document.body, 'light');
       this.renderer.addClass(document.body, 'dark');
     }
+  }
+
+  applyFilter() {
+    this.filteredEntries = this.entries.filter(entry => {
+      const entryDate = new Date(entry.date);
+      const monthMatches = this.filterMonth ? (entryDate.getMonth() + 1).toString().padStart(2, '0') === this.filterMonth : true;
+      const yearMatches = this.filterYear ? entryDate.getFullYear().toString() === this.filterYear : true;
+      return monthMatches && yearMatches;
+    });
+  }
+
+  updateAvailableYears() {
+    const years = new Set<string>();
+    this.entries.forEach(entry => {
+      const year = new Date(entry.date).getFullYear().toString();
+      years.add(year);
+    });
+    this.availableYears = Array.from(years).sort();
   }
 }

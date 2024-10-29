@@ -1,14 +1,39 @@
+<!-- Додайте Font Awesome у ваш index.html -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 <div [ngClass]="theme" class="diary-container">
-  <h1>Мій Щоденник</h1>
+  <h1>
+    <i class="fas fa-book"></i> <!-- Іконка книги -->
+    Мій Щоденник
+  </h1>
   <textarea [(ngModel)]="newEntry" placeholder="Напишіть свої думки..."></textarea>
   <button (click)="addEntry()">Додати запис</button>
   <button (click)="deleteAllEntries()">Видалити всі записи</button>
   <button (click)="toggleTheme()">Змінити тему</button>
 
+  <!-- Фільтр за місяцем і роком -->
+  <div class="filter">
+    <label for="month">Місяць:</label>
+    <select id="month" [(ngModel)]="filterMonth" (change)="applyFilter()">
+      <option value="">Всі</option>
+      <option *ngFor="let month of ['01','02','03','04','05','06','07','08','09','10','11','12']" [value]="month">
+        {{ month }}
+      </option>
+    </select>
+
+    <label for="year">Рік:</label>
+    <select id="year" [(ngModel)]="filterYear" (change)="applyFilter()">
+      <option value="">Всі</option>
+      <option *ngFor="let year of availableYears" [value]="year">{{ year }}</option>
+    </select>
+  </div>
+
+  <!-- Список записів з фільтрацією -->
   <div class="entries">
-    <div *ngFor="let entry of entries" class="entry">
+    <div *ngFor="let entry of filteredEntries; let i = index" class="entry">
       <p>{{ entry.content }}</p>
       <small>{{ entry.date }}</small>
+      <span class="delete-icon" (click)="deleteEntry(i)">&#10006;</span>
     </div>
   </div>
 </div>
